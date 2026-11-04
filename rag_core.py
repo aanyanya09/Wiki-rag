@@ -46,8 +46,35 @@ def search(question, k=5):
 
     return res.drop_duplicates(subset="name").head(k).reset_index(drop=True)
 
-
 def ask_llm(prompt):
+    api_key = get_secret("GROQ_API_KEY")
+
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY is missing from Streamlit Secrets.")
+
+    response = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "llama-3.1-8b-instant",
+            "temperature": 0.2,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ]
+        },
+        timeout=60
+    )
+
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Groq API error {response.status_code}: {response.text}"
+        )
+
+    return response.json()["choices"][0]["message"]["content"]
+
     api_key = get_secret("GROQ_API_KEY")
 
     if not api_key:
@@ -66,8 +93,7 @@ def ask_llm(prompt):
 
     if response.status_code != 200:
        raise RuntimeError(
-          f"Groq API error {response.status_code}:
-           {response.text}"
+          f"Groq API error {response.status_code}: {response.text}"
        )
 
     return response.json()["choices"][0]["message"]["content"]
