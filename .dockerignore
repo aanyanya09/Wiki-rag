@@ -1,0 +1,8 @@
+rag_env
+venv
+.venv
+wiki_index
+*.zip
+part_*
+__pycache__
+.git
