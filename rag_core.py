@@ -26,7 +26,7 @@ def get_secret(name):
         return os.environ.get(name)
 
 
-@st.cache_resource(show_spinner="Loading Wikipedia index...")
+@st.cache_resource(show_spinner="Loading Wikipedia index...", ttl=3600)
 def load_database():
 
     hf_token = get_secret("HF_TOKEN")
