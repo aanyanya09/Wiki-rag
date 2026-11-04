@@ -1,166 +1,190 @@
-\# Wikipedia RAG: Ask Questions Over Wikipedia
-
-
-
-\*\*Track:\*\* Build with Open Source
-
-\*\*Event:\*\* Open Source Day, Wikiclub
-
-
-
-\*\*Demo video:\*\* \[PASTE YOUTUBE/DRIVE LINK]
-
-\*\*Live demo:\*\* \[PASTE LINK, OR DELETE THIS LINE]
-
-
-
-\## What it is
-
-
-
-A Retrieval-Augmented Generation (RAG) app that answers questions using only
-
-the Wikimedia Structured Wikipedia Dataset. It searches 1,468,100 indexed
-
-Wikipedia articles, finds the most relevant passages, and gives them to an LLM
-
-that must answer from those passages. If the answer is not in them, it says
-
-"I don't know." Every answer shows its sources with links.
-
-
-
-\## How it works
-
-
-
-1\. \*\*Dataset:\*\* the Wikimedia Structured Wikipedia Dataset (Kaggle), about 47 GB raw.
-
-2\. \*\*Parse and clean:\*\* article names, text and URLs were extracted from the 53 source files.
-
-3\. \*\*Embed:\*\* each article text was converted to a 384-number vector with
-
-&#x20;  `BAAI/bge-small-en-v1.5`, so similar meanings sit close together.
-
-4\. \*\*Store:\*\* vectors and metadata were saved in LanceDB, an embedded vector
-
-&#x20;  database that reads from disk (about 1.6 GB compressed).
-
-5\. \*\*Retrieve:\*\* a question is embedded with the same model, and the closest
-
-&#x20;  passages are fetched. Duplicate article titles are removed.
-
-6\. \*\*Generate:\*\* the passages and question go to Llama 3.2 3B (via Ollama),
-
-&#x20;  with the instruction to answer only from the context and cite sources like \[1].
-
-7\. \*\*Show:\*\* a Streamlit app displays the answer, source links and passages.
-
-
-
-\## Example questions
-
-
-
-\- Where is Utuado? (direct fact)
-
-\- Which Irish programme promotes science to schools? (indirect question)
-
-\- What did I eat yesterday? (not in the data, so the system answers "I don't know")
-
-
-
-\## Features
-
-
-
-\- Semantic search over 1.47M articles
-
-\- Sources with links and retrieved passages for every answer
-
-\- Adjustable number of retrieved passages and sample questions
-
-\- Light and dark mode (follows the system theme)
-
-\- Runs fully locally (Ollama) or with a hosted LLM (Groq) by setting an environment variable
-
-
-
-\## Run locally
-
-
-
-1\. Get the index and put it at `./wiki\_index` (the folder that contains `wiki.lance`).
-
-2\. Create an environment (Python 3.11 or 3.12) and install:
-
-&#x20;  `pip install -r requirements.txt`
-
-3\. Install Ollama, then run `ollama pull llama3.2:3b`
-
-4\. Start the app: `streamlit run app.py`
-
-
-
-\## Run with Docker
-
-
-
+# Wikipedia RAG — Ask Questions Over 1.47 Million Wikipedia Articles
+
+---
+
+##  Project Overview
+
+**Wikipedia RAG** is a Retrieval-Augmented Generation (RAG) application that answers questions using information retrieved from the Wikimedia Structured Wikipedia Dataset.
+
+Instead of relying entirely on an LLM's internal knowledge, the application searches an indexed collection of approximately **1,468,100 Wikipedia articles**, retrieves relevant information, and generates answers grounded in the retrieved passages.
+
+If the answer cannot be found in the retrieved context, the system is instructed to respond that it doesn't know.
+
+Every answer includes references to its retrieved sources.
+
+**Track:** Build with Open Source
+**Event:** Open Source Day — Wikiclub
+
+###  Try the Live Application
+
+[**Open Wikipedia RAG**](https://uixr62wc6apb4f2rs3jqyv.streamlit.app/)
+
+---
+
+## ✨ Features
+
+* 🔍 **Semantic Search:** Search across approximately 1.47 million Wikipedia articles.
+* 🧠 **AI-Powered Answers:** Generate context-grounded answers using Groq.
+* 📚 **Source References:** View retrieved Wikipedia articles and their links.
+* 🎯 **Context-Based Responses:** Answers are generated using retrieved passages rather than unrestricted model knowledge.
+* 💬 **Interactive Chat:** Ask questions through a conversational interface.
+* ⚡ **Vector Search:** Similarity search powered by LanceDB.
+* ☁️ **Cloud Deployment:** Hosted using Streamlit Community Cloud, with the index stored on Hugging Face.
+
+---
+
+## ⚙️ How It Works
+
+Wikipedia RAG follows a Retrieval-Augmented Generation pipeline.
+
+### RAG Architecture
+
+```text
+       Wikipedia Dataset
+               |
+               v
+       Data Extraction
+               |
+               v
+       Text Cleaning
+               |
+               v
+     Sentence Transformers
+      (BGE-small-en-v1.5)
+               |
+               v
+         LanceDB Index
+               |
+               v
+       User Question
+               |
+               v
+       Query Embedding
+               |
+               v
+       Semantic Retrieval
+               |
+               v
+       Relevant Passages
+               |
+               v
+         Groq LLM API
+               |
+               v
+        Generated Answer
+               |
+               v
+       Sources + Response
 ```
 
-docker build -t wiki-rag .
+### Pipeline Explanation
 
-docker run -p 8501:8501 -v <path-to>/wiki\_index:/app/wiki\_index -e OLLAMA\_URL=http://host.docker.internal:11434 wiki-rag
+1. **Dataset:** The Wikimedia Structured Wikipedia Dataset, containing approximately 1.47 million articles.
+2. **Data Processing:** Article titles, text, and URLs are extracted and cleaned.
+3. **Embedding:** Article content is converted into 384-dimensional vectors using `BAAI/bge-small-en-v1.5`.
+4. **Vector Storage:** Embeddings and metadata are stored in LanceDB.
+5. **Retrieval:** The user's question is embedded and compared against indexed vectors to retrieve relevant articles.
+6. **Generation:** Retrieved passages and the question are sent to Groq's LLM API, with instructions to answer using the provided context.
+7. **Presentation:** Streamlit displays the generated answer and relevant source references.
 
+---
+
+## 💡 Example Questions
+
+Try asking the application:
+
+* Where is Utuado?
+* Which Irish programme promotes science to schools?
+* What is artificial intelligence?
+* Explain quantum computing.
+* How does the human brain work?
+
+You can also ask questions whose answers are not available in the dataset to test the system's ability to handle missing information.
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology            | Purpose                         |
+| --------------------- | ------------------------------- |
+| Python                | Core programming language       |
+| Streamlit             | Interactive web interface       |
+| LanceDB               | Vector database                 |
+| Sentence Transformers | Text embeddings                 |
+| BGE-small-en-v1.5     | Embedding model                 |
+| Groq API              | LLM inference                   |
+| Hugging Face Hub      | Dataset and index hosting       |
+| GitHub                | Version control and source code |
+
+---
+
+## 📂 Project Structure
+
+```text
+Wiki-rag/
+│
+├── app.py              # Streamlit application
+├── rag_core.py         # RAG pipeline and retrieval logic
+├── requirements.txt    # Python dependencies
+├── Dockerfile          # Docker configuration
+├── README.md           # Project documentation
+│
+└── upload_index.py     # Hugging Face index upload utility
 ```
 
+The large LanceDB index is hosted separately on Hugging Face rather than stored in this GitHub repository.
 
+---
 
-To use Groq instead of Ollama, add
+## ☁️ Deployment
 
-`-e LLM\_PROVIDER=groq -e GROQ\_API\_KEY=<your key>`.
+The application uses:
 
-API keys are read from environment variables and are never stored in the code.
+* **Streamlit Community Cloud:** Hosts the web application.
+* **Hugging Face Hub:** Stores the LanceDB index.
+* **Groq:** Provides LLM inference.
 
-When Groq is used, the question and retrieved passages are sent to Groq's servers.
+The application retrieves its index from Hugging Face and uses Streamlit Secrets to access the required credentials.
 
+---
 
+## 📦 About the Wikipedia Index
 
-\## About the index
+The indexed dataset is approximately 1.6 GB in size and is not included in this GitHub repository.
 
+It is hosted separately on Hugging Face:
 
+[**View Wiki RAG Index on Hugging Face**](https://huggingface.co/datasets/aanya09shukla/wiki-rag-index)
 
-The index is not in this repo because of its size (about 1.6 GB).
+Access may require permission if the dataset repository is private.
 
-\[ADD A DRIVE / HUGGING FACE LINK HERE, OR WRITE "Available on request."]
+---
 
+##  Privacy and API Usage
 
+* API credentials are stored in Streamlit Secrets or environment variables.
+* Credentials are not included in the source code.
+* When Groq is used, the user's question and retrieved passages are sent to Groq's API for answer generation.
+* The application uses retrieved Wikipedia content as its answer context.
 
-\## Tech stack
+---
 
+##  AI Assistance
 
+AI assistants were used during development for debugging, implementation guidance, and documentation support.
 
-Python, Streamlit, LanceDB, sentence-transformers (bge-small-en-v1.5),
+The project team understands the architecture and the underlying RAG workflow.
 
-Ollama with Llama 3.2 3B, optional Groq API, Docker.
+---
 
+##  Credits
 
+* Wikipedia and Wikimedia contributors for the underlying encyclopedic content.
+* Wikimedia Structured Wikipedia Dataset.
+* Hugging Face for model and dataset hosting.
+* The open-source communities behind Streamlit, LanceDB, and Sentence Transformers.
+* Groq for LLM inference.
 
-\## AI assistance
+Built for the **Wikiclub Open Source Day Challenge**.
 
-
-
-We used AI assistants while building this project. All team members understand
-
-and can explain the pipeline.
-
-
-
-\## Credits
-
-
-
-Content comes from Wikipedia, licensed CC BY-SA 4.0, via the Wikimedia
-
-Structured Wikipedia Dataset. Built for the Wikiclub Open Source Day challenge.
 
