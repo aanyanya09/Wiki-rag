@@ -43,6 +43,7 @@ def load_database():
 
     db = lancedb.connect(repo_path)
     table = db.open_table("wiki")
+    print(table.list_indices())
 
     return table
 
