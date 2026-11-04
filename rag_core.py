@@ -10,8 +10,6 @@ from huggingface_hub import snapshot_download
 from sentence_transformers import SentenceTransformer
 
 
-# Configuration
-
 HF_REPO_ID = "aanya09shukla/wiki-rag-index"
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 GROQ_MODEL = "openai/gpt-oss-20b"
@@ -28,17 +26,13 @@ def get_secret(name):
         return os.environ.get(name)
 
 
-# Load Wikipedia database
-
 @st.cache_resource(show_spinner="Loading Wikipedia index...")
 def load_database():
 
     hf_token = get_secret("HF_TOKEN")
 
     if not hf_token:
-        raise RuntimeError(
-            "HF_TOKEN is missing from Streamlit Secrets."
-        )
+        raise RuntimeError("HF_TOKEN is missing from Streamlit Secrets.")
 
     repo_path = snapshot_download(
         repo_id=HF_REPO_ID,
@@ -48,13 +42,10 @@ def load_database():
     )
 
     db = lancedb.connect(repo_path)
-
     table = db.open_table("wiki")
 
     return table
 
-
-# Load embedding model
 
 @st.cache_resource(show_spinner="Loading embedding model...")
 def load_embedding_model():
@@ -64,8 +55,6 @@ def load_embedding_model():
         device="cpu"
     )
 
-
-# Semantic search
 
 def search(question, k=5):
 
@@ -93,16 +82,12 @@ def search(question, k=5):
     return results.head(k).reset_index(drop=True)
 
 
-# Groq LLM
-
 def ask_llm(prompt):
 
     api_key = get_secret("GROQ_API_KEY")
 
     if not api_key:
-        raise RuntimeError(
-            "GROQ_API_KEY is missing from Streamlit Secrets."
-        )
+        raise RuntimeError("GROQ_API_KEY is missing from Streamlit Secrets.")
 
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -114,10 +99,7 @@ def ask_llm(prompt):
             "model": GROQ_MODEL,
             "temperature": 0.2,
             "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
+                {"role": "user", "content": prompt}
             ]
         },
         timeout=60
@@ -125,14 +107,11 @@ def ask_llm(prompt):
 
     if response.status_code != 200:
         raise RuntimeError(
-            f"Groq API error {response.status_code}: "
-            f"{response.text}"
+            f"Groq API error {response.status_code}: {response.text}"
         )
 
     return response.json()["choices"][0]["message"]["content"]
 
-
-# Complete RAG pipeline
 
 def answer(question, k=5):
 
@@ -146,8 +125,7 @@ def answer(question, k=5):
     prompt = (
         "Answer using ONLY the context below. "
         "If the answer is not available in the context, "
-        "say you don't know. "
-        "Cite sources using references like [1].\n\n"
+        "say you don't know. Cite sources using references like [1].\n\n"
         f"Context:\n{context}\n\n"
         f"Question: {question}\n"
         "Answer:"
